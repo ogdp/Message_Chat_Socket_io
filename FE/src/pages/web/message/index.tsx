@@ -12,6 +12,12 @@ const index = () => {
   const [roomId, setRoomId] = useState("");
   const [userName, setUserName] = useState("");
 
+  let arrRoom: string[] = [];
+  const historyRoomChat: any = localStorage.getItem("historyRoomChat");
+  console.log(historyRoomChat);
+  if (historyRoomChat !== null) arrRoom = JSON.parse(historyRoomChat);
+  // const arrRoom = JSON.parse(historyRoomChat);
+
   useEffect(() => {
     if (localStorage.getItem("myInfo")) {
       const user: any = localStorage.getItem("myInfo");
@@ -165,7 +171,10 @@ const index = () => {
                 className="bg-gray-200 pl-12 py-2 md:py-4 focus:outline-none w-full"
                 placeholder="ID PHÒNG"
                 value={roomId}
-                onChange={(e) => setRoomId(e.target.value)}
+                onChange={(e) => {
+                  const id: any = e.target.value.split("=")?.slice(1)[0];
+                  setRoomId(id !== undefined ? id : e.target.value);
+                }}
               />
             </div>
 
@@ -204,7 +213,7 @@ const index = () => {
                     onClick={() => setToogleHistoryChat(!toogleHistoryChat)}
                     className="cursor-pointer my-3 hover:text-blue-700 text-blue-800 font-medium"
                   >
-                    Lịch sử chat
+                    {!toogleHistoryChat ? `Lịch sử chat` : `Ẩn lịch sử`}
                   </div>
                 </div>
               </>
@@ -230,17 +239,22 @@ const index = () => {
                     onClick={() => setToogleHistoryChat(!toogleHistoryChat)}
                     className="cursor-pointer my-3 hover:text-blue-700 text-blue-800 font-medium"
                   >
-                    Lịch sử chat
+                    {!toogleHistoryChat ? `Lịch sử chat` : `Ẩn lịch sử`}
                   </div>
                 </div>
               </>
             )}
             {toogleHistoryChat && (
-              <div className="text-gray-600">
+              <div className="text-gray-600 text-right">
                 <ul>
-                  <i className="hover:text-black transition-all duration-150">
-                    <Link to={`/chat?id=${toogleHistoryChat}`}>lre233</Link>
-                  </i>
+                  {arrRoom?.reverse().map((id: string, index: number) => (
+                    <div key={index}>
+                      <i className="hover:text-black transition-all duration-150">
+                        <Link to={`/chat?id=${id}`}>{id}</Link>
+                      </i>
+                      <br />
+                    </div>
+                  ))}
                 </ul>
               </div>
             )}

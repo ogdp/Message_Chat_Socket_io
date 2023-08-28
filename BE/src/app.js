@@ -18,8 +18,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     // origin: "https://vercel-server-gmjo.vercel.app",
-    // origin: "http://localhost:5173",
-    origin: "https://message-chat-socket-io.vercel.app",
+    origin: "http://localhost:5173",
+    // origin: "https://message-chat-socket-io.vercel.app",
     methods: ["GET", "POST"],
   },
 });
@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
   console.log("User connected", socket.id);
 
   socket.on("joinRoom", (roomId) => {
-    console.log("Client joined room: " + roomId);
+    console.log("Client joined room: " + roomId + "   " + Date.now());
 
     // Gửi dữ liệu từ database đến client (giả sử data là dữ liệu từ database)
     socket.join(roomId);
