@@ -18,8 +18,8 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     // origin: "https://vercel-server-gmjo.vercel.app",
+    origin: "https://message-chat-socket-io.vercel.app",
     origin: "http://localhost:5173",
-    // origin: "https://message-chat-socket-io.vercel.app",
     methods: ["GET", "POST"],
   },
 });

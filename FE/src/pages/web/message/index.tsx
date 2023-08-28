@@ -14,7 +14,7 @@ const index = () => {
 
   let arrRoom: string[] = [];
   const historyRoomChat: any = localStorage.getItem("historyRoomChat");
-  console.log(historyRoomChat);
+  // console.log(historyRoomChat);
   if (historyRoomChat !== null) arrRoom = JSON.parse(historyRoomChat);
   // const arrRoom = JSON.parse(historyRoomChat);
 
@@ -56,6 +56,7 @@ const index = () => {
         },
         data: data,
       };
+      console.log(import.meta.env.VITE_URL_DB);
       await axios.request(config);
       navigate(`/chat?id=${data.chatID}`);
       toast.success("Create success box chat");
