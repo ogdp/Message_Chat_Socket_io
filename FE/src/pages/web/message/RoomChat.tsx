@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import RoomChatEmpty from "../../../components/web/RoomChatEmpty";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { TMessage } from "../../../types/message";
+import Loading from "../../../components/Loading";
 
 const RoomChat = () => {
+  const navigate = useNavigate();
   const socket: any = io(`${import.meta.env.VITE_URL_DB}`);
   const url = new URL(window.location.href);
   const id = url.searchParams.get("id");
@@ -14,17 +16,39 @@ const RoomChat = () => {
   const [messages, setMessages] = useState<any | TMessage | undefined>(
     undefined
   );
-  //   console.log(id);
+  const user: any = localStorage.getItem("myInfo");
+  if (!user) return (window.location.href = "/");
+  // console.log(id);
+
+  // JOIN ROOM NGAY KHI VÀO BOXCHAT
+  function sendRoomId(id: string) {
+    // console.log(id);
+    socket.emit("joinRoom", id);
+    // console.log("DANG join");
+  }
+
+  sendRoomId(String(id));
 
   const getMessages = async () => {
     try {
       const { data }: any = await axios.get(
         `${import.meta.env.VITE_URL_DB}/api/chat/${id}`
       );
+      if (data.message == "Tin nhắn không tồn tại") {
+        navigate("/");
+        return toast.error("Không tìm thấy room chat", {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
       socket.emit("join_room", id);
-      // socket.emit("send_message", "");
       const listMess = data.chat.docs.reverse();
-
       return listMess;
     } catch (error) {
       console.log(error);
@@ -37,7 +61,6 @@ const RoomChat = () => {
         setMessages(await getMessages());
       } catch (error) {}
     })();
-    // setMessages(getMessages());
   }, []);
 
   const sendMessage = async (data: TMessage) => {
@@ -53,7 +76,7 @@ const RoomChat = () => {
         data: data,
       };
       await axios.request(config);
-      toast.success("Send message successfully");
+      // toast.success("Send message successfully");
     } catch (error) {
       console.log(error);
       toast.error("Error sending message");
@@ -61,31 +84,8 @@ const RoomChat = () => {
   };
 
   useEffect(() => {
-    socket.on("receive_message", (data: any) => {
+    socket.on("receive_message", () => {
       // console.log("Nhận thư");
-      const data2 = [
-        {
-          peopleID: ["fdhsg", "fdhsg"],
-          userID: 1,
-          chatID: "id1",
-          nameUser: "duc nam",
-          message: "1",
-        },
-        {
-          peopleID: ["fdhsg", "fdhsg"],
-          userID: 1,
-          chatID: "id1",
-          nameUser: "duc nam",
-          message: "2",
-        },
-        {
-          peopleID: ["fdhsg", "fdhsg"],
-          userID: 1,
-          chatID: "id1",
-          nameUser: "duc nam",
-          message: "3",
-        },
-      ];
       (async () => {
         try {
           setMessages(await getMessages());
@@ -118,15 +118,18 @@ const RoomChat = () => {
       console.log(error);
     }
   };
+  if (messages == undefined) return <Loading />;
   if (id?.length === 0 || messages?.length === 0 || messages == undefined)
     return <RoomChatEmpty />;
+
   return (
     <>
       <ToastContainer />{" "}
-      <Link to={"/"}>
-        {" "}
-        <h1 className="text-3xl font-medium my-5 text-center">Chat Box</h1>
-      </Link>
+      <h1 className="text-3xl font-medium my-5 text-center">
+        <Link to={"/"} className="">
+          Chat Box{" "}
+        </Link>
+      </h1>
       <div className="max-w-2xl mx-auto">
         <div>
           <div className="flex flex-col h-full">
@@ -139,7 +142,10 @@ const RoomChat = () => {
                       className="col-start-6 col-end-13 p-3 rounded-lg"
                     >
                       <div className="flex items-center justify-start flex-row-reverse">
-                        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 text-white font-medium flex-shrink-0">
+                        <div
+                          title={item.nameUser}
+                          className="cursor-pointer flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 text-white font-medium flex-shrink-0"
+                        >
                           {item.nameUser.charAt(0).toUpperCase()}
                         </div>
                         <div className="relative mr-3 text-sm bg-indigo-100 py-2 px-4 shadow rounded-xl">
@@ -155,7 +161,10 @@ const RoomChat = () => {
                       className="col-start-1 col-end-8 p-3 rounded-lg"
                     >
                       <div className="flex flex-row items-center">
-                        <div className="flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 text-white font-medium flex-shrink-0">
+                        <div
+                          title={item.nameUser}
+                          className="cursor-pointer flex items-center justify-center h-10 w-10 rounded-full bg-indigo-500 text-white font-medium flex-shrink-0"
+                        >
                           {item.nameUser.charAt(0).toUpperCase()}
                         </div>
                         <div className="relative ml-3 text-sm bg-white py-2 px-4 shadow rounded-xl">

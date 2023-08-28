@@ -1,8 +1,6 @@
-import React from "react";
 import { Form, Input, Button, message } from "antd";
-type Props = {};
 
-const Signup = (props: Props) => {
+const Signup = () => {
   const onFinish = async (values: any) => {
     console.log(values);
     try {
@@ -33,7 +31,7 @@ const Signup = (props: Props) => {
               rules={[
                 { required: true, message: "Tên là trường bắt buộc" },
                 {
-                  validator: (rule, value) => {
+                  validator: (_, value) => {
                     if (/\s\s/.test(value)) {
                       return Promise.reject(
                         "Không được nhập nhiều hơn 1 khoảng trắng liên tiếp"
@@ -72,7 +70,7 @@ const Signup = (props: Props) => {
                 { required: true, message: "Password là trường bắt buộc" },
                 { min: 6, message: "Mật khẩu tối thiểu 6 ký tự" },
                 {
-                  validator: (rule, value) => {
+                  validator: (_, value) => {
                     if (/\s/.test(value)) {
                       return Promise.reject(
                         "Password không được chứa dấu cách"

@@ -1,37 +1,24 @@
-import { useEffect, useState } from "react";
-import io from "socket.io-client";
+import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid"; // npm i uuid @types/uuid
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import axios from "axios";
-
-const socket: any = io(`${import.meta.env.VITE_URL_DB}`);
 
 const index = () => {
   const navigate = useNavigate();
 
   const [toggleBtn, setToggleBtn] = useState<boolean>(false);
-  const [room, setRoom] = useState("");
+  const [toogleHistoryChat, setToogleHistoryChat] = useState<boolean>(false);
   const [roomId, setRoomId] = useState("");
   const [userName, setUserName] = useState("");
 
-  const [message, setMessage] = useState("");
-  const [messageReceive, setMessageReceive] = useState("");
-
-  const joinRoom = () => {
-    if (room !== "") {
-      socket.emit("join_room", room);
-    }
-  };
-
-  const sendMessage = () => {
-    socket.emit("send_message", { message, room });
-  };
   useEffect(() => {
-    socket.on("receive_message", (data: any) => {
-      setMessageReceive(data.message);
-    });
-  }, [socket]);
+    if (localStorage.getItem("myInfo")) {
+      const user: any = localStorage.getItem("myInfo");
+      const nameUser = JSON.parse(user).nameUser;
+      setUserName(nameUser);
+    }
+  }, []);
 
   const onHandleGenarateID = (e: any) => {
     e.preventDefault();
@@ -73,8 +60,6 @@ const index = () => {
   };
   const onHandleNewRoom = async (e: any) => {
     e.preventDefault();
-    // console.log(roomId);
-    // console.log(userName);
     const myInfo = {
       userID: uuidv4(),
       nameUser: "Anonymous",
@@ -108,10 +93,8 @@ const index = () => {
     }
   };
 
-  const onHandleJoinRoom = (e: any) => {
+  const onHandleJoinRoom = async (e: any) => {
     e.preventDefault();
-    // console.log(roomId);
-    // console.log(userName);
     const myInfo = {
       userID: uuidv4(),
       nameUser: "Anonymous",
@@ -138,7 +121,27 @@ const index = () => {
       obj.nameUser = myInfo.nameUser;
     }
     localStorage.setItem("info_room", JSON.stringify(obj));
-    navigate(`/chat?id=${roomId}`);
+
+    // GET MESSAGE
+    try {
+      const { data }: any = await axios.get(
+        `${import.meta.env.VITE_URL_DB}/api/chat/${roomId}`
+      );
+      if (data.message == "Tin nhắn không tồn tại")
+        return toast.error("Không tìm thấy room chat", {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      navigate(`/chat?id=${roomId}`);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -160,7 +163,7 @@ const index = () => {
                 type="text"
                 id="room_id"
                 className="bg-gray-200 pl-12 py-2 md:py-4 focus:outline-none w-full"
-                placeholder="Room ID"
+                placeholder="ID PHÒNG"
                 value={roomId}
                 onChange={(e) => setRoomId(e.target.value)}
               />
@@ -174,7 +177,7 @@ const index = () => {
                 type="text"
                 id="username"
                 className="bg-gray-200 pl-12 py-2 md:py-4 focus:outline-none w-full"
-                placeholder="Username"
+                placeholder="TÊN HIỂN THỊ"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
@@ -185,9 +188,9 @@ const index = () => {
                   onClick={(e) => onHandleJoinRoom(e)}
                   className="bg-gradient-to-b from-gray-700 to-gray-900 font-medium p-2 md:p-4 text-white uppercase w-full"
                 >
-                  JOIN ROOM
+                  THAM GIA PHÒNG
                 </button>
-                <div>
+                <div className="flex justify-between items-center">
                   <button
                     onClick={(e) => {
                       onHandleGenarateID(e);
@@ -195,8 +198,14 @@ const index = () => {
                     }}
                     className="my-3 hover:text-blue-700 text-blue-800 font-medium"
                   >
-                    New room
+                    Chat mới
                   </button>
+                  <div
+                    onClick={() => setToogleHistoryChat(!toogleHistoryChat)}
+                    className="cursor-pointer my-3 hover:text-blue-700 text-blue-800 font-medium"
+                  >
+                    Lịch sử chat
+                  </div>
                 </div>
               </>
             ) : (
@@ -205,30 +214,39 @@ const index = () => {
                   onClick={(e) => onHandleNewRoom(e)}
                   className="bg-gradient-to-b from-gray-700 to-gray-900 font-medium p-2 md:p-4 text-white uppercase w-full"
                 >
-                  NEW ROOM
+                  CHAT MỚI
                 </button>
-                <button
-                  onClick={(e) => {
-                    onHandleGenarateID(e);
-                    setToggleBtn(!toggleBtn);
-                  }}
-                  className="my-3 hover:text-blue-700 text-blue-800 font-medium"
-                >
-                  Join room
-                </button>
+                <div className="flex justify-between items-center">
+                  <button
+                    onClick={(e) => {
+                      onHandleGenarateID(e);
+                      setToggleBtn(!toggleBtn);
+                    }}
+                    className="my-3 hover:text-blue-700 text-blue-800 font-medium"
+                  >
+                    Tham gia phòng
+                  </button>
+                  <div
+                    onClick={() => setToogleHistoryChat(!toogleHistoryChat)}
+                    className="cursor-pointer my-3 hover:text-blue-700 text-blue-800 font-medium"
+                  >
+                    Lịch sử chat
+                  </div>
+                </div>
               </>
+            )}
+            {toogleHistoryChat && (
+              <div className="text-gray-600">
+                <ul>
+                  <i className="hover:text-black transition-all duration-150">
+                    <Link to={`/chat?id=${toogleHistoryChat}`}>lre233</Link>
+                  </i>
+                </ul>
+              </div>
             )}
           </form>
         </div>
       </div>
-
-      {/* <div style={{ minWidth: "100%" }}>
-        <div>MESSAGE : {messageReceive}</div>
-        <input type="text" onChange={(e) => setRoom(e.target.value)} />
-        <button onClick={joinRoom}>Join Room</button>
-        <input type="text" onChange={(e) => setMessage(e.target.value)} />
-        <button onClick={sendMessage}>Send Message</button>
-      </div> */}
     </>
   );
 };

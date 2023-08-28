@@ -4,6 +4,7 @@ import MessageManager from "./pages/web/message";
 import Signin from "./pages/auth/Signin";
 import Signup from "./pages/auth/Signup";
 import RoomChat from "./pages/web/message/RoomChat";
+import NotFound from "./components/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -53,5 +54,9 @@ export const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);

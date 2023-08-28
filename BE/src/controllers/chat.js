@@ -52,21 +52,12 @@ export const get = async (req, res) => {
     const chat = await Chat.paginate(
       {
         chatID: req.params.id,
-
-        // $or: [
-        //   {
-        //     chatID: {
-        //       $regex: req.params.id,
-        //     },
-        //     // status: true,
-        //   },
-        // ],
       },
       options
     );
-    if (!chat) {
-      return res.status(400).json({
-        message: "tin nhắn không tồn tại",
+    if (chat.totalDocs == 0) {
+      return res.status(200).json({
+        message: "Tin nhắn không tồn tại",
       });
     }
     return res.status(200).json({

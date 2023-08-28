@@ -1,8 +1,6 @@
-import React from "react";
 import { Form, Input, Button, message } from "antd";
-type Props = {};
 
-const signin = (props: Props) => {
+const signin = () => {
   const onFinish = async (values: any) => {
     console.log(values);
     try {
@@ -51,7 +49,7 @@ const signin = (props: Props) => {
                 { required: true, message: "Password là trường bắt buộc" },
                 { min: 6, message: "Mật khẩu tối thiểu 6 ký tự" },
                 {
-                  validator: (rule, value) => {
+                  validator: (_, value) => {
                     if (/\s/.test(value)) {
                       return Promise.reject(
                         "Password không được chứa dấu cách"
